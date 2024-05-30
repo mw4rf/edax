@@ -40,7 +40,7 @@ func main() {
 		// No id provided: start the last timer
 		id := len(timers) - 1
 		// Id provided: start the timer with that id
-		if len(args) > 2 {
+		if len(args) >= 1 {
 			id = parseInt(args[1])
 		}
 		startTimer(&timers, id)
@@ -117,9 +117,9 @@ func getStatus(timer Timer) (string, string) {
 	)
 
 	if timer.Running {
-		return "▶️ Running", green
+		return "[Running]", green
 	} else {
-		return "⏹️ Stopped", red
+		return "[Stopped]", red
 	}
 }
 
