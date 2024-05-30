@@ -17,9 +17,10 @@ func main() {
 		fmt.Println("Commands:")
 		fmt.Println("  version 			=> Show version number")
 		fmt.Println("  create <name> 		=> Create a new timer with a name")
-		fmt.Println("  start <id> 			=> Start a timer")
+		fmt.Println("  start 				=> Start the last timer created")
+		fmt.Println("  start <id> 			=> Start a timer, and stop all others")
+		fmt.Println("  stop 	 			=> Stop the running timer")
 		fmt.Println("  reset <id> 			=> Reset a timer")
-		fmt.Println("  stop <id> 			=> Stop a timer")
 		fmt.Println("  list 				=> List all timers")
 		os.Exit(1)
 	}
@@ -36,12 +37,13 @@ func main() {
 		t := createTimer(len(timers), args[1])
 		timers = append(timers, t)
 	case "start":
-		if len(args) < 2 {
-			fmt.Println("Usage: edax start <id>")
-			os.Exit(1)
+		// No id provided: start the last timer
+		id := len(timers) - 1
+		// Id provided: start the timer with that id
+		if len(args) > 2 {
+			id = parseInt(args[1])
 		}
-		id := args[1]
-		startTimer(&timers, parseInt(id))
+		startTimer(&timers, id)
 	case "reset":
 		if len(args) < 2 {
 			fmt.Println("Usage: edax reset <id>")
@@ -50,12 +52,7 @@ func main() {
 		id := args[1]
 		resetTimer(&timers, parseInt(id))
 	case "stop":
-		if len(args) < 2 {
-			fmt.Println("Usage: edax stop <id>")
-			os.Exit(1)
-		}
-		id := args[1]
-		stopTimer(&timers, parseInt(id))
+		stopTimer(&timers)
 	case "list":
 		printList(&timers)
 	}
@@ -158,9 +155,22 @@ func startTimer(timers *[]Timer, id int) {
 		fmt.Println("Timer is already running")
 		return
 	}
-	timer.Start = time.Now().Unix()
+	// Start the timer
+	// Are we resuming a stopped timer?
+	if timer.Start != 0 && timer.End != 0 {
+		timer.Start = time.Now().Unix() - (timer.End - timer.Start)
+	} else {
+		timer.Start = time.Now().Unix()
+	}
 	timer.End = 0
 	timer.Running = true
+	// Stop all other timers
+	for i := range *timers {
+		if i != id {
+			(*timers)[i].Running = false
+			(*timers)[i].End = time.Now().Unix()
+		}
+	}
 	fmt.Printf("Timer %s started at %s\n", timer.Name, formatTime(timer.Start))
 }
 
@@ -177,19 +187,15 @@ func resetTimer(timers *[]Timer, id int) {
 	fmt.Printf("Timer %s reset\n", timer.Name)
 }
 
-// Stop a timer identified by its id
-func stopTimer(timers *[]Timer, id int) {
-	if id < 0 || id >= len(*timers) {
-		fmt.Println("Invalid timer ID")
-		return
-	}
-	timer := &(*timers)[id]
-	if timer.Running {
-		timer.Running = false
-		timer.End = time.Now().Unix()
-		fmt.Printf("Timer %s stopped at %s\n", timer.Name, formatTime(timer.End))
-	} else {
-		fmt.Println("Timer is not running")
+// Stop the current timer
+func stopTimer(timers *[]Timer) {
+	for i := range *timers {
+		if (*timers)[i].Running {
+			(*timers)[i].End = time.Now().Unix()
+			(*timers)[i].Running = false
+			fmt.Printf("Timer %s stopped at %s\n", (*timers)[i].Name, formatTime((*timers)[i].End))
+			return
+		}
 	}
 }
 
