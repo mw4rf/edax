@@ -15,13 +15,14 @@ func main() {
 	if len(args) < 1 {
 		fmt.Println("Usage: edax [command] <value>")
 		fmt.Println("Commands:")
-		fmt.Println("  version 			=> Show version number")
-		fmt.Println("  create <name> 		=> Create a new timer with a name")
-		fmt.Println("  start 				=> Start the last timer created")
-		fmt.Println("  start <id> 			=> Start a timer, and stop all others")
-		fmt.Println("  stop 	 			=> Stop the running timer")
-		fmt.Println("  reset <id> 			=> Reset a timer")
-		fmt.Println("  list 				=> List all timers")
+		fmt.Println("  version		=> Show version number")
+		fmt.Println("  create <name>		=> Create a new timer with a name")
+		fmt.Println("  start			=> Start the last timer created")
+		fmt.Println("  start <id>		=> Start a timer, and stop all others")
+		fmt.Println("  stop			=> Stop the running timer")
+		fmt.Println("  reset <id>		=> Reset a timer")
+		fmt.Println("  delete <id>		=> Delete a timer")
+		fmt.Println("  list			=> List all timers")
 		os.Exit(1)
 	}
 
@@ -53,6 +54,13 @@ func main() {
 		resetTimer(&timers, parseInt(id))
 	case "stop":
 		stopTimer(&timers)
+	case "delete":
+		if len(args) < 2 {
+			fmt.Println("Usage: edax delete <id>")
+			os.Exit(1)
+		}
+		id := args[1]
+		deleteTimer(&timers, parseInt(id))
 	case "list":
 		printList(&timers)
 	}
@@ -231,4 +239,13 @@ func loadTimers() []Timer {
 		return make([]Timer, 0)
 	}
 	return timers
+}
+
+// Delete a timer
+func deleteTimer(timers *[]Timer, id int) {
+	if id < 0 || id >= len(*timers) {
+		fmt.Println("Invalid timer ID")
+		return
+	}
+	*timers = append((*timers)[:id], (*timers)[id+1:]...)
 }
