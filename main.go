@@ -6,6 +6,8 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"regexp"
+	"strings"
 )
 
 // Main
@@ -83,16 +85,40 @@ type Timer struct {
 	Start   int64  `json:"start"`
 	End     int64  `json:"end"`
 	Running bool   `json:"running"`
+	Tags    []Tag  `json:"tags"`
+}
+
+type Tag struct {
+	Name string `json:"name"`
 }
 
 // Create a new timer
 func createTimer(id int, name string) Timer {
+	// Extract tags from the name
+	tagRegex := regexp.MustCompile(`#\w+`)
+	tags := tagRegex.FindAllString(name, -1)
+
+	// Remove tags from the name
+	for _, tag := range tags {
+		name = strings.Replace(name, tag, "", -1)
+	}
+
+	// Trim any extra spaces from the name
+	name = strings.TrimSpace(name)
+
+	// Create Tag objects
+	tagObjects := make([]Tag, len(tags))
+	for i, tag := range tags {
+		tagObjects[i] = Tag{Name: tag}
+	}
+
 	return Timer{
 		Id:      id,
 		Name:    name,
 		Start:   0,
 		End:     0,
 		Running: false,
+		Tags:    tagObjects,
 	}
 }
 
@@ -103,6 +129,7 @@ func printList(timers *[]Timer) {
 		lightBlue = "\033[94m"
 		red       = "\033[91m"
 		green     = "\033[92m"
+		yellow    = "\033[93m"
 		reset     = "\033[0m"
 	)
 
@@ -111,7 +138,17 @@ func printList(timers *[]Timer) {
 	for _, timer := range *timers {
 		status, color := getStatus(timer)
 		duration := calculateDuration(timer.Start, timer.End, timer.Running)
-		fmt.Printf("[%d] %s%s%s %s%s%s\n", timer.Id, color, status, reset, lightBlue, timer.Name, reset)
+		// Name
+		fmt.Printf("[%d] %s%s%s %s%s%s", timer.Id, color, status, reset, yellow, timer.Name, reset)
+		// Tags
+		if len(timer.Tags) > 0 {
+			fmt.Printf(" ")
+			for _, tag := range timer.Tags {
+				fmt.Printf("%s%s%s ", lightBlue, tag.Name, reset)
+			}
+		}
+		fmt.Printf("\n")
+		// Start, End, Duration
 		fmt.Printf("%sStart: %-19s End: %-19s Duration: %s%s\n", grey, formatTime(timer.Start), formatTime(timer.End), duration, reset)
 		fmt.Println(grey + "------------------------------------------------------" + reset)
 	}
