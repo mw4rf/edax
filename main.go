@@ -25,6 +25,7 @@ func main() {
 		fmt.Println("  reset <id>		=> Reset a timer")
 		fmt.Println("  delete <id>		=> Delete a timer")
 		fmt.Println("  list			=> List all timers")
+		fmt.Println("  today			=> List all timers started today")
 		fmt.Println("  search <query>	=> Search for timers")
 		os.Exit(1)
 	}
@@ -66,6 +67,8 @@ func main() {
 		deleteTimer(&timers, parseInt(id))
 	case "list":
 		printList(&timers)
+	case "today":
+		printToday(&timers)
 	case "search":
 		if len(args) < 2 {
 			fmt.Println("Usage: edax search <query>")
@@ -73,6 +76,7 @@ func main() {
 		}
 		printSearch(&timers, args[1])
 	}
+
 }
 
 // Parse a string to an integer
@@ -178,6 +182,21 @@ func printSearch(timers *[]Timer, query string) {
 	}
 	if len(results) == 0 {
 		fmt.Println("No results found")
+		return
+	}
+	printList(&results)
+}
+
+func printToday(timers *[]Timer) {
+	fmt.Println("Today's Timers:")
+	results := make([]Timer, 0)
+	for _, timer := range *timers {
+		if time.Now().Day() == time.Unix(timer.Start, 0).Day() {
+			results = append(results, timer)
+		}
+	}
+	if len(results) == 0 {
+		fmt.Println("No timers today")
 		return
 	}
 	printList(&results)
