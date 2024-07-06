@@ -25,6 +25,7 @@ func main() {
 		fmt.Println("  reset <id>		=> Reset a timer")
 		fmt.Println("  delete <id>		=> Delete a timer")
 		fmt.Println("  list			=> List all timers")
+		fmt.Println("  search <query>	=> Search for timers")
 		os.Exit(1)
 	}
 
@@ -65,6 +66,12 @@ func main() {
 		deleteTimer(&timers, parseInt(id))
 	case "list":
 		printList(&timers)
+	case "search":
+		if len(args) < 2 {
+			fmt.Println("Usage: edax search <query>")
+			os.Exit(1)
+		}
+		printSearch(&timers, args[1])
 	}
 }
 
@@ -152,6 +159,28 @@ func printList(timers *[]Timer) {
 		fmt.Printf("%sStart: %-19s End: %-19s Duration: %s%s\n", grey, formatTime(timer.Start), formatTime(timer.End), duration, reset)
 		fmt.Println(grey + "------------------------------------------------------" + reset)
 	}
+}
+
+func printSearch(timers *[]Timer, query string) {
+	fmt.Printf("Searching for '%s'\n", query)
+	results := make([]Timer, 0)
+	for _, timer := range *timers {
+		if strings.Contains(timer.Name, query) {
+			results = append(results, timer)
+			continue
+		}
+		for _, tag := range timer.Tags {
+			if strings.Contains(tag.Name, query) {
+				results = append(results, timer)
+				break
+			}
+		}
+	}
+	if len(results) == 0 {
+		fmt.Println("No results found")
+		return
+	}
+	printList(&results)
 }
 
 // Get the status of the timer as an emoji with appropriate color
