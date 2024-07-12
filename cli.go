@@ -9,7 +9,7 @@ import (
 // Print the list of timers
 func printList(timers *[]Timer) {
 	const (
-		grey      = "\033[90m"
+		grey      = "\033[37m"
 		lightBlue = "\033[94m"
 		red       = "\033[91m"
 		green     = "\033[92m"
