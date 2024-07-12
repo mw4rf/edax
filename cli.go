@@ -6,17 +6,18 @@ import (
 	"time"
 )
 
+
+const (
+	grey      = "\033[37m"
+	lightBlue = "\033[94m"
+	red       = "\033[91m"
+	green     = "\033[92m"
+	yellow    = "\033[93m"
+	reset     = "\033[0m"
+)
+
 // Print the list of timers
 func printList(timers *[]Timer) {
-	const (
-		grey      = "\033[37m"
-		lightBlue = "\033[94m"
-		red       = "\033[91m"
-		green     = "\033[92m"
-		yellow    = "\033[93m"
-		reset     = "\033[0m"
-	)
-
 	fmt.Println(grey + "Timers List:" + reset)
 	fmt.Println(grey + "------------------------------------------------------" + reset)
 	for _, timer := range *timers {
@@ -73,4 +74,28 @@ func printToday(timers *[]Timer) {
 		return
 	}
 	printList(&results)
+}
+
+func printStatus(timers *[]Timer, id *int) {
+	// If no id is provided, print the status of the running timer
+	if id == nil {
+		for _, timer := range *timers {
+			if timer.Running {
+				id = &timer.Id
+				break
+			}
+		}
+	}
+
+	// If no running timer is found
+	if id == nil {
+		fmt.Println("No running timer")
+		return
+	}
+
+	// Print the status of the timer
+	timer := (*timers)[*id]
+	status, color := getStatus(timer)
+	duration := calculateDuration(timer.Start, timer.End, timer.Running)
+	fmt.Printf("%s%s%s %s%s%s %s%s%s\n", color, status, reset, yellow, timer.Name, reset, grey, duration, reset)
 }

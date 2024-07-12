@@ -24,6 +24,8 @@ func main() {
 		fmt.Println("  list			=> List all timers")
 		fmt.Println("  today			=> List all timers started today")
 		fmt.Println("  search <query>	=> Search for timers")
+		fmt.Println("  status		=> Show the status of the running timer")
+		fmt.Println("  status <id>		=> Show the status of a timer")
 		os.Exit(1)
 	}
 
@@ -64,6 +66,16 @@ func main() {
 		deleteTimer(&timers, parseInt(id))
 	case "list":
 		printList(&timers)
+	case "status":
+		// No argument: print the status of the running timer
+		if len(args) < 2 {
+			printStatus(&timers, nil)
+		} else
+		// Argument provided: print the status of the timer with that id
+		{
+			id := parseInt(args[1])
+			printStatus(&timers, &id)
+		}
 	case "today":
 		printToday(&timers)
 	case "search":
