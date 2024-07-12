@@ -30,6 +30,7 @@ func formatTime(timestamp int64) string {
 
 // Calculate the duration between start and end times
 func calculateDuration(start, end int64, running bool) string {
+	// Get duration in seconds
 	if start == 0 {
 		return "Not Started"
 	}
@@ -37,7 +38,30 @@ func calculateDuration(start, end int64, running bool) string {
 		end = time.Now().Unix()
 	}
 	duration := end - start
-	return fmt.Sprintf("%d seconds", duration)
+
+	// Convert to days, hours, minutes, seconds
+	days := duration / (24 * 3600)
+	duration = duration % (24 * 3600)
+	hours := duration / 3600
+	duration = duration % 3600
+	minutes := duration / 60
+	seconds := duration % 60
+
+	// Format the duration
+	result := ""
+	if days > 0 {
+		result += fmt.Sprintf("%d days ", days)
+	}
+	if hours > 0 {
+		result += fmt.Sprintf("%d hours ", hours)
+	}
+	if minutes > 0 {
+		result += fmt.Sprintf("%d minutes ", minutes)
+	}
+	if seconds > 0 {
+		result += fmt.Sprintf("%d seconds", seconds)
+	}
+	return result
 }
 
 
