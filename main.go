@@ -8,6 +8,7 @@ import (
 	"time"
 	"regexp"
 	"strings"
+	"path/filepath"
 )
 
 // Main
@@ -292,9 +293,41 @@ func stopTimer(timers *[]Timer) {
 	}
 }
 
+// Returns the default directory for the application,
+// according to the operating system
+// e.g. /home/user/.config/edax
+func getDefaultDirectory() (string, error) {
+	// Get the user config directory
+	dir, err := os.UserConfigDir()
+	if err != nil {
+		return "", err
+	}
+
+	// Append your application directory
+	dir = filepath.Join(dir, "edax")
+	return dir, nil
+}
+
 // Save all timers to a file as a JSON object
 func saveTimers(timers *[]Timer) {
-	file, err := os.Create("timers.json")
+	// Get the default directory, create it if it doesn't exist
+	dir, err := getDefaultDirectory()
+	if err != nil {
+		fmt.Println("Error getting default directory")
+		return
+	}
+	err = os.MkdirAll(dir, os.ModePerm)
+	if err != nil {
+		fmt.Println("Error creating directory")
+		return
+	}
+
+	// Create the full file path
+	filePath := filepath.Join(dir, "timers.json")
+
+	// Create the file
+	// If the file already exists, it will be overwritten
+	file, err := os.Create(filePath)
 	if err != nil {
 		fmt.Println("Error creating file")
 		return
@@ -311,7 +344,18 @@ func saveTimers(timers *[]Timer) {
 
 // Load all timers from a file as a JSON object
 func loadTimers() []Timer {
-	file, err := os.Open("timers.json")
+	// Get the default directory,
+	// return an empty Timer array if it doesn't exist
+	dir, err := getDefaultDirectory()
+	if err != nil {
+		return make([]Timer, 0)
+	}
+
+	// Create the full file path
+	filePath := filepath.Join(dir, "timers.json")
+
+	// Open the file
+	file, err := os.Open(filePath)
 	if err != nil {
 		return make([]Timer, 0)
 	}
