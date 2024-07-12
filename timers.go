@@ -77,6 +77,7 @@ func startTimer(timers *[]Timer, id int) {
 		fmt.Println("Timer is already running")
 		return
 	}
+
 	// Start the timer
 	// Are we resuming a stopped timer?
 	if timer.Start != 0 && timer.End != 0 {
@@ -86,13 +87,15 @@ func startTimer(timers *[]Timer, id int) {
 	}
 	timer.End = 0
 	timer.Running = true
-	// Stop all other timers
+
+	// Stop all other running timers
 	for i := range *timers {
-		if i != id {
+		if i != id && (*timers)[i].Running {
 			(*timers)[i].Running = false
 			(*timers)[i].End = time.Now().Unix()
 		}
 	}
+
 	fmt.Printf("Timer %s started at %s\n", timer.Name, formatTime(timer.Start))
 }
 
